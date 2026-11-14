@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="400" height="400">
+  <!-- Background emerald green circle with no border -->
+  <circle cx="100" cy="100" r="94" fill="#15803d" />
+
+  <!-- Outer white bolt contour with rounded corners and joins -->
+  <path d="M 104 30
+           L 58 102
+           A 3 3 0 0 0 61 106
+           L 96 106
+           L 82 168
+           A 3 3 0 0 0 87 171
+           L 146 96
+           A 3 3 0 0 0 144 91
+           L 108 91
+           L 109 32
+           A 3 3 0 0 0 104 30 Z"
+        fill="#ffffff"
+        stroke="#ffffff"
+        stroke-width="10"
+        stroke-linejoin="round"
+        stroke-linecap="round" />
+
+  <!-- Inner matching emerald green bolt (#15803d) with rounded vertices -->
+  <path d="M 103 44
+           L 69 98
+           A 2 2 0 0 0 71 101
+           L 99 101
+           L 89 152
+           A 2 2 0 0 0 92 154
+           L 133 100
+           A 2 2 0 0 0 131 96
+           L 105 96
+           L 106 46
+           A 2 2 0 0 0 103 44 Z"
+        fill="#15803d"
+        stroke="#15803d"
+        stroke-width="5"
+        stroke-linejoin="round"
+        stroke-linecap="round" />
+</svg>
