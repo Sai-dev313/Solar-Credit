@@ -29,12 +29,16 @@ the only file the frontend needs to change.
   sends `raw_user_meta_data = { full_name, role }`, where `role` is `producer` or `consumer` (anything else becomes consumer).
   If a profile row is missing the dashboard cannot load.
 - The browser may only change `profiles.full_name`. It must never write any other table or column.
+- **Sign in with Google** (enable the Google provider in Supabase and add the site address under Authentication ->
+  URL Configuration) sends a name and email but **no role**. That user starts as a consumer with
+  `profiles.role_chosen = false`; the app then shows a one-time "choose your role" screen that calls `choose_role`.
+  After that the role is locked, exactly as for email sign-ups (which choose a role on the form, so `role_chosen` is already true).
 
 ## 3. Tables the browser reads (select only, Row Level Security: each user sees their own rows)
 
 | Table | Columns the app uses |
 |---|---|
-| `profiles` | `id, full_name, role, credits, cash, wallet_address` |
+| `profiles` | `id, full_name, role, role_chosen, credits, cash, wallet_address` |
 | `energy_logs` | `id, log_date, generated, used, exported, claimed` (one row per user per day) |
 | `listings` | `id, seller_id, credits, price_per_credit, status (active/sold/cancelled), created_at` |
 | `trades` | `id, listing_id, buyer_id, seller_id, credits, total_price, created_at` |
@@ -43,7 +47,7 @@ the only file the frontend needs to change.
 
 Numbers can arrive as strings or bigints; the app converts them (`web/src/data/normalize.ts`).
 
-## 4. The 7 database functions (the only way the app changes data)
+## 4. The 8 database functions (the only way the app changes data)
 
 Every function returns `jsonb`: `{ "ok": true|false, "message": "...", ...extra }`. When `ok` is false the
 `message` is shown to the user as is, so keep messages short and readable.
@@ -56,6 +60,7 @@ Every function returns `jsonb`: `{ "ok": true|false, "message": "...", ...extra 
 | `cancel_listing` | `p_listing_id uuid` | Own active listing only. Unsold credits return to the owner, queues `CANCEL`. |
 | `buy_listing` | `p_listing_id uuid` | Buys a whole listing. Cash goes to the seller, credits to the buyer, queues `TRADE`. |
 | `market_listings` | none | Returns rows: `id, credits, price_per_credit, total, seller_name, is_mine, created_at`. |
+| `choose_role` | `p_role text` | `producer` or `consumer`, **once**, and only for a user whose `role_chosen` is false (a first Google sign-in). Afterwards it returns "Your role is already set". |
 | `pay_bill` | `p_provider, p_consumer_number, p_consumer_name, p_billing_month, p_meter_number, p_units, p_rate, p_credits_to_use` | **1 credit = Rs 2** off the bill; the rest is paid by (simulated) UPI. Burns the used credits (`BURN`). Returns `receipt_id, credits_applied, savings, upi_paid`. |
 
 ### Rules the database must enforce (the form checks them too, but the database is the real guard)

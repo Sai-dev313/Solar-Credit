@@ -11,6 +11,7 @@ import removeCreditsOnLogDelete from "./vendor/sql/20260103000000_remove_credits
 import validateConsumerNumber from "./vendor/sql/20260104000000_validate_consumer_number.sql?raw";
 import ensureProfiles from "./vendor/sql/20260105000000_ensure_profiles.sql?raw";
 import listingPriceLimit from "./vendor/sql/20260106000000_listing_price_limit.sql?raw";
+import chooseRole from "./vendor/sql/20260107000000_choose_role.sql?raw";
 // Plain JS module shared with the edge function
 import { processEvents, walletAddressFor } from "./vendor/chain-sync-process.js";
 import type { BillInput, DataApi, RpcResult, Role, Session } from "./types";
@@ -46,6 +47,7 @@ export function createDemoApi(): DataApi {
       await db.exec(validateConsumerNumber);
       await db.exec(ensureProfiles);
       await db.exec(listingPriceLimit);
+      await db.exec(chooseRole);
       await db.exec(`grant usage on schema public to anon, authenticated; grant all on all tables in schema public to service_role;`);
     }
     return db;
@@ -171,6 +173,7 @@ export function createDemoApi(): DataApi {
     async bills() { return (await as(`select * from bill_payments order by created_at desc`)).map(mapBill); },
     async chainEvents() { return (await as(`select * from chain_events order by id desc limit 100`)).map(mapEvent); },
     logEnergy: (g, u) => rpc("log_energy", g, u),
+    chooseRole: (role) => rpc("choose_role", role),
     claimCredits: () => rpc("claim_credits"),
     createListing: (c, p) => rpc("create_listing", c, p),
     cancelListing: (id) => rpc("cancel_listing", id),

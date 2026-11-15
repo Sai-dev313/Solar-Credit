@@ -16,6 +16,8 @@ export interface Profile {
   credits: number;
   cash: number;
   wallet_address: string | null;
+  /** False only for a brand-new Google sign-in that has not picked Producer / Consumer yet. */
+  role_chosen: boolean;
 }
 
 export interface EnergyLog {
@@ -129,6 +131,8 @@ export interface DataApi {
   bills(): Promise<BillPayment[]>;
   chainEvents(): Promise<ChainEvent[]>;
   logEnergy(generated: number, used: number): Promise<RpcResult>;
+  /** One-time choice of role for a user who signed in without one (Google). Locked afterwards. */
+  chooseRole(role: Role): Promise<RpcResult>;
   claimCredits(): Promise<RpcResult>;
   createListing(credits: number, price: number): Promise<RpcResult>;
   cancelListing(id: string): Promise<RpcResult>;

@@ -4,6 +4,7 @@ import { activeTab, tabsFor } from "./tabs";
 import { Ph, Spinner } from "../../components/ui";
 import { chainConfig } from "../../lib/chain";
 import { useApp } from "../auth/AppProvider";
+import { ChooseRole } from "../auth/ChooseRole";
 
 /** Shown while the profile loads. If it takes too long, stop spinning and let the user retry or sign out. */
 function SettingUp() {
@@ -37,6 +38,7 @@ export function DashLayout() {
   if (booting) return <Spinner />;
   if (!session) return <Navigate to="/auth" replace />;
   if (!profile) return <SettingUp />;
+  if (!profile.role_chosen) return <ChooseRole />; // a first Google sign-in picks Producer or Consumer once
 
   const link = ({ isActive }: { isActive: boolean }) =>
     `flex items-center space-x-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${

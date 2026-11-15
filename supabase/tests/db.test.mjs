@@ -246,6 +246,34 @@ await t("a user without a profile gets one (ensure_profiles repairs it), and sig
   assert.equal((await db.query(`select count(*)::int n from profiles where id=$1`, [u])).rows[0].n, 1);
   const u2 = await signup("Fresh", "consumer");                                      // the trigger still builds profiles for new users
   assert.equal((await db.query(`select role from profiles where id=$1`, [u2])).rows[0].role, "consumer");
+  // Re-running an OLD migration redefines the sign-up trigger as it was then. Put the newest definition back
+  // (as a real database would have it) so later tests see the current behaviour. In production: apply migrations in order, once.
+  await db.exec(readFileSync(new URL("../migrations/20260107000000_choose_role.sql", import.meta.url), "utf8"));
+});
+
+await t("a Google-style sign-up (no role) picks a role exactly once; email sign-ups are already set", async () => {
+  const roleOf = async (id) => (await db.query(`select role, role_chosen from profiles where id=$1`, [id])).rows[0];
+  const emailUser = await signup("Email Person", "producer");                          // sign-up form sent role=producer
+  assert.deepEqual(await roleOf(emailUser), { role: "producer", role_chosen: true });
+  assert.equal((await rpc(emailUser, "choose_role", "consumer")).ok, false);            // already set, cannot flip
+  assert.equal((await roleOf(emailUser)).role, "producer");
+
+  // Google sends a name + email but no role
+  const g = (await db.query(`insert into auth.users (raw_user_meta_data) values ('{"name":"Gee Oogle","email":"g@x"}'::jsonb) returning id`)).rows[0].id;
+  assert.deepEqual(await roleOf(g), { role: "consumer", role_chosen: false });          // safe default, not chosen yet
+  assert.equal((await db.query(`select full_name from profiles where id=$1`, [g])).rows[0].full_name, "Gee Oogle"); // Google's name is used
+  assert.equal((await rpc(g, "choose_role", "admin")).ok, false);                        // only producer / consumer
+  assert.equal((await rpc(g, "choose_role", null)).ok, false);
+  const r = await rpc(g, "choose_role", "producer");
+  assert.equal(r.ok, true); assert.deepEqual(await roleOf(g), { role: "producer", role_chosen: true });
+  const again = await rpc(g, "choose_role", "consumer");
+  assert.equal(again.ok, false); assert.equal((await roleOf(g)).role, "producer");       // locked after the first choice
+  // the browser still cannot write these columns directly
+  assert.ok(await fails(as(g, `update profiles set role='consumer' where id=$1`, [g])));
+  assert.ok(await fails(as(g, `update profiles set role_chosen=false where id=$1`, [g])));
+  // anonymous callers are blocked
+  await db.exec(`set role anon`);
+  try { assert.ok(await fails(db.query(`select public.choose_role('producer')`))); } finally { await db.exec(`reset role`); }
 });
 
 console.log(`\n${passed} database tests passed`);
