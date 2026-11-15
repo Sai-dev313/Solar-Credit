@@ -81,7 +81,7 @@ export function createSupabaseApi(url: string, anonKey: string): DataApi {
       },
     },
     async profile() {
-      const { data, error } = await sb.from("profiles").select("id, full_name, role, credits, cash, wallet_address").maybeSingle();
+      const { data, error } = await sb.from("profiles").select("id, full_name, role, credits, cash, wallet_address, role_chosen").maybeSingle();
       if (error) throw new Error(error.message); // an error is not "no profile": callers must not treat it as a deleted account
       return data ? mapProfile(data) : null;
     },
@@ -111,6 +111,7 @@ export function createSupabaseApi(url: string, anonKey: string): DataApi {
       return (await rows(sb.from("chain_events").select("*").order("id", { ascending: false }).limit(100))).map(mapEvent);
     },
     logEnergy: (g, u) => call("log_energy", { p_generated: g, p_used: u }),
+    chooseRole: (role) => call("choose_role", { p_role: role }),
     claimCredits: () => call("claim_credits"),
     createListing: (c, p) => call("create_listing", { p_credits: c, p_price: p }),
     cancelListing: (id) => call("cancel_listing", { p_listing_id: id }),

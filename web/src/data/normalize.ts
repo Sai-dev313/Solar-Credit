@@ -9,6 +9,7 @@ const day = (v: unknown) => (v instanceof Date ? v.toISOString().slice(0, 10) : 
 
 export const mapProfile = (r: Row): Profile => ({
   id: r.id, full_name: r.full_name, role: r.role, credits: n(r.credits), cash: n(r.cash), wallet_address: r.wallet_address ?? null,
+  role_chosen: r.role_chosen == null ? true : !!r.role_chosen,
 });
 export const mapLog = (r: Row): EnergyLog => ({
   id: r.id, log_date: day(r.log_date), generated: n(r.generated), used: n(r.used), exported: n(r.exported), claimed: n(r.claimed),
