@@ -3,9 +3,10 @@
 This is the agreement between the three parts of SolarCredit. The website (`web/`) is built against exactly
 what is written here. If a name, column or shape changes, change it here too and tell the frontend owner.
 
-**A working reference** of the database (tables, the 7 functions, triggers) is in
-[`web/src/data/vendor/sql/`](../../web/src/data/vendor/sql/). The offline demo runs that SQL in the browser,
-so it is tested to match the frontend. Build the real backend to behave the same.
+The real database is in [`supabase/migrations/`](../../supabase/migrations/) and is described in
+[`docs/database/DATA_MODEL.md`](../database/DATA_MODEL.md). Its tests (`cd supabase && npm run test:db`) check
+the rules below. The offline demo runs copies of the same SQL (`web/src/data/vendor/sql/`); when a migration
+changes, copy the new version there too.
 
 The website talks to the backend through **one file**: `web/src/data/supabase.ts` (it implements the
 `DataApi` interface in `web/src/data/types.ts`). If something here differs from your implementation, that is
@@ -51,7 +52,7 @@ Every function returns `jsonb`: `{ "ok": true|false, "message": "...", ...extra 
 |---|---|---|
 | `log_energy` | `p_generated numeric, p_used numeric` | Producers only. Records the day's meter reading. `exported = max(generated - used, 0)`. |
 | `claim_credits` | none | Producers only. Turns not-yet-claimed `exported` units into credits (**1 unit = 1 credit**), queues a `MINT` event. |
-| `create_listing` | `p_credits numeric, p_price numeric` | Producers only. Price per credit between 0 and 1000 (rupees). Moves credits out of the balance into the listing, queues `LIST`. |
+| `create_listing` | `p_credits numeric, p_price numeric` | Producers only. Price per credit **between Rs 1 and Rs 10** (a realistic price per unit). Moves credits out of the balance into the listing, queues `LIST`. |
 | `cancel_listing` | `p_listing_id uuid` | Own active listing only. Unsold credits return to the owner, queues `CANCEL`. |
 | `buy_listing` | `p_listing_id uuid` | Buys a whole listing. Cash goes to the seller, credits to the buyer, queues `TRADE`. |
 | `market_listings` | none | Returns rows: `id, credits, price_per_credit, total, seller_name, is_mine, created_at`. |
