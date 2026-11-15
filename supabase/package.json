@@ -1,0 +1,14 @@
+{
+  "name": "solar-credit-supabase-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/db.test.mjs && node tests/e2e.mjs",
+    "test:db": "node tests/db.test.mjs",
+    "test:e2e": "node tests/e2e.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.2.17",
+    "ethers": "^6.13.4"
+  }
+}

@@ -1,0 +1,27 @@
+name: Backend (database tests)
+
+# Runs the database tests on every pull request (and push to main) that touches the backend.
+# The tests apply every migration to an in-memory Postgres and check the business rules, the security rules
+# (a signed-in user cannot change credits, cash or role; anonymous callers are blocked) and the 7 functions.
+on:
+  pull_request:
+    paths: ["supabase/**", ".github/workflows/backend.yml"]
+  push:
+    branches: [main]
+    paths: ["supabase/**", ".github/workflows/backend.yml"]
+
+jobs:
+  db-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: supabase
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: supabase/package-lock.json
+      - run: npm ci
+      - run: npm run test:db
