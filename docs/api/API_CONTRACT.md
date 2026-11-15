@@ -98,6 +98,9 @@ sends them to the contract and writes the result back.
 
 ## 7. Smart contract (Blockchain)
 
+Source: `contracts/contracts/SolarCredit.sol`. Address and ABI: `contracts/deployment.json`. How it all fits together:
+[`docs/architecture/blockchain-flow.md`](../architecture/blockchain-flow.md).
+
 The app **reads** the chain directly (`web/src/lib/chain.ts`, ABI in `web/src/lib/chainAbi.ts`) to show the
 "verified on blockchain" page. It decodes these events, so their names and fields must stay as they are:
 
