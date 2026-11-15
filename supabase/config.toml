@@ -1,0 +1,7 @@
+project_id = "uytcnfixvhdelfjxeopo"
+
+[functions.chain-sync]
+# The function authenticates the caller itself (admin.auth.getUser on the bearer token),
+# so the gateway-level JWT check is switched off. That also avoids problems with the new
+# publishable/secret API keys and asymmetric JWT signing.
+verify_jwt = false
