@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body { width: 100%; margin: 0; padding: 0; min-height: 100%; }
+  body { @apply bg-surface font-body-md text-body-md text-on-surface antialiased selection:bg-secondary-container selection:text-on-secondary-container; }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+  :focus-visible { @apply outline-none ring-2 ring-primary/50 ring-offset-2 ring-offset-surface; }
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal; font-style: normal; font-size: 24px; line-height: 1;
+  letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap;
+  word-wrap: normal; direction: ltr; -webkit-font-feature-settings: "liga"; font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+.num { font-variant-numeric: tabular-nums; }
+.card-lift { transition: transform .2s, box-shadow .2s; }
+.card-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(5,150,105,.08), 0 8px 10px -6px rgba(15,23,42,.04); }
+
+/* Sign-up screen styles from the Stitch export */
+.role-option { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+.role-option.active { background-color: #0f6b3b !important; color: #ffffff !important; border-color: #0f6b3b !important; }
+.role-option.active .role-subtitle { color: #d1fae5 !important; }
+.role-option.inactive { background-color: #ffffff; color: #1f2937; border-color: #e5e7eb; }
+.role-option.inactive:hover { background-color: #f0fdf4; border-color: #0f6b3b; }
+.role-option.inactive .role-subtitle { color: #6b7280; }
+.btn-primary-green { background-color: #0f6b3b; transition: all 150ms ease-in-out; }
+.btn-primary-green:hover { background-color: #0a4d2a !important; }
+.btn-primary-green:active { background-color: #083b20 !important; }
+.btn-primary-green:disabled { opacity: .6; cursor: not-allowed; }
+.link-primary-green { color: #0f6b3b; transition: color 150ms ease-in-out; }
+.link-primary-green:hover { color: #0a4d2a !important; }
+.font-display { font-family: "Plus Jakarta Sans", sans-serif; }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.tab-enter { animation: tabIn .25s ease-out; }
+@keyframes tabIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Landing page: each section takes ~70% of the viewport height, so the top ~30% of the next
+   section peeks in at the bottom; scrolling settles on section starts. */
+html:has(.landing-snap) { scroll-snap-type: y proximity; scroll-padding-top: 4rem; }
+.snap-section { min-height: 70vh; display: flex; align-items: center; scroll-snap-align: start; scroll-margin-top: 4rem; }
+
+/* Hero: fills the screen under the header minus a 10rem strip (about 20% of a laptop screen: the divider band plus the next heading),
+   so the top of the next section peeks in as a scroll hint. Content is centred in what is left. */
+.hero-section { height: calc(100vh - 4rem - 10rem); min-height: 28rem; justify-content: center; }
+
+/* Section right under the hero strip: content starts near the top (with a little breathing room
+   below the strip) and the section is only as tall as its content, so the next section shows below it. */
+.snap-top { align-items: flex-start; min-height: 0; padding-top: 2.5rem; padding-bottom: 10.5rem; }
+
+/* Divider strip under the hero: a slightly tilted green band whose pills scroll right to left.
+   The wrapper clips the tilted ends so the page never scrolls sideways. */
+.divider-strip { position: relative; overflow: hidden; padding: 1.25rem 0; }
+.divider-strip__band {
+  margin: 0 -4%; width: 108%; padding: 0.9rem 0; transform: rotate(-1.6deg);
+  background: #006948; box-shadow: 0 8px 24px -10px rgba(0, 105, 72, .45); overflow: hidden;
+}
+.marquee-track { display: flex; width: max-content; animation: marquee 38s linear infinite; }
+.divider-strip:hover .marquee-track { animation-play-state: paused; }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
+
+/* Hero background: a soft green dot grid that fades out toward the edges, plus a faint glow
+   behind the headline. Drawn on a pseudo-element so the text on top is not affected. */
+.hero-section { position: relative; isolation: isolate; }
+.hero-section::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-image:
+    radial-gradient(circle at center, rgba(0, 105, 72, .28) 1.4px, transparent 1.8px),
+    radial-gradient(ellipse 55% 45% at 50% 48%, rgba(108, 248, 187, .22), transparent 70%);
+  background-size: 24px 24px, 100% 100%;
+  -webkit-mask-image: radial-gradient(ellipse 75% 85% at 50% 50%, #000 30%, transparent 100%);
+  mask-image: radial-gradient(ellipse 75% 85% at 50% 50%, #000 30%, transparent 100%);
+}
+
+/* Scroll-reveal: elements start hidden, then rise in (staggered by .reveal-N) when scrolled to.
+   Uses an animation with fill "backwards" (not a transition) so hover effects on the same element
+   are not delayed once it has appeared. */
+.reveal { opacity: 0; }
+.reveal.is-visible { opacity: 1; animation: revealUp .7s cubic-bezier(.2,.7,.2,1) backwards; }
+.reveal-1.is-visible { animation-delay: .15s; }
+.reveal-2.is-visible { animation-delay: .3s; }
+.reveal-3.is-visible { animation-delay: .45s; }
+@keyframes revealUp { from { opacity: 0; transform: translateY(48px) scale(.96); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; } .reveal.is-visible { animation: none; } }
+
+/* ---- Landing micro-animations ---- */
+/* Cards lift on hover and their icon gives a little tilt. Declared after .reveal so it wins. */
+.lift { transition: transform .25s ease, box-shadow .25s ease; }
+.lift:hover { transform: translateY(-6px); box-shadow: 0 18px 32px -14px rgba(0, 105, 72, .28); }
+.lift .material-symbols-outlined { transition: transform .25s ease; }
+.lift:hover .material-symbols-outlined { transform: scale(1.1) rotate(-5deg); }
+
+/* Buttons and links: the little icon inside nudges forward on hover. */
+.landing-snap :is(a, button) > .material-symbols-outlined { transition: transform .2s ease; }
+.landing-snap :is(a, button):hover > .material-symbols-outlined { transform: translateX(3px); }
+
+/* Header links: an underline slides in on hover. */
+.landing-snap header [data-scroll] {
+  background: linear-gradient(currentColor, currentColor) left bottom / 0 2px no-repeat; transition: background-size .25s ease, color .2s;
+}
+.landing-snap header [data-scroll]:hover { background-size: 100% 2px; }
+
+/* Hero: the content fades up one piece at a time on load, and the dots drift slowly. */
+.hero-section > div > * { animation: heroIn .8s cubic-bezier(.2,.7,.2,1) backwards; }
+.hero-section > div > :nth-child(1) { animation-delay: .05s; }
+.hero-section > div > :nth-child(2) { animation-delay: .15s; }
+.hero-section > div > :nth-child(3) { animation-delay: .27s; }
+.hero-section > div > :nth-child(4) { animation-delay: .4s; }
+@keyframes heroIn { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+.hero-section::before { animation: dotsDrift 40s linear infinite; }
+@keyframes dotsDrift { from { background-position: 0 0, 0 0; } to { background-position: 24px 24px, 0 0; } }
+
+/* FAQ answers fade in when opened; the bright blob in the final banner slowly breathes. */
+details[open] > p { animation: faqIn .3s ease; }
+@keyframes faqIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.glow-breathe { animation: breathe 6s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { opacity: .5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.15); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-section > div > *, .hero-section::before, details[open] > p, .glow-breathe { animation: none; }
+  .lift:hover { transform: none; }
+}
