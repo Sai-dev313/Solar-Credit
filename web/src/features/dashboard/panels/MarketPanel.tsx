@@ -4,6 +4,19 @@ import { Button, Card, Empty, Field, INPUT, Modal, PanelHeader, Ph, Pill, Spinne
 import { credits as fmt, dateTime, inr } from "../../../lib/format";
 import { useApp, useLoad } from "../../auth/AppProvider";
 
+/** A realistic price per credit (1 credit = 1 unit of electricity), in rupees. Typical Indian tariffs are about Rs 3-10 per unit. */
+const PRICE_MIN = 1, PRICE_MAX = 10;
+
+/** Keep only a plain amount: digits, one dot, at most 2 decimals; anything above `max` snaps down to `max`. */
+const cleanAmount = (raw: string, max: number) => {
+  let v = raw.replace(/[^\d.]/g, "");
+  const dot = v.indexOf(".");
+  if (dot !== -1) v = v.slice(0, dot + 1) + v.slice(dot + 1).replace(/\./g, "").slice(0, 2);
+  if (v.startsWith(".")) v = "0" + v;
+  v = v.replace(/^0+(?=\d)/, "");
+  return v !== "" && Number(v) > max ? String(max) : v;
+};
+
 export function MarketPanel() {
   const { api, profile, afterAction } = useApp();
   const toast = useToast();
@@ -18,7 +31,7 @@ export function MarketPanel() {
 
   const producer = profile.role === "producer";
   const q = Number(qty), p = Number(price);
-  const sellOk = qty !== "" && price !== "" && q > 0 && q <= profile.credits && p > 0 && p <= 1000;
+  const sellOk = qty !== "" && price !== "" && q > 0 && q <= profile.credits && p >= PRICE_MIN && p <= PRICE_MAX;
   const rows = market.data ?? [];
   const avg = rows.length ? rows.reduce((s, l) => s + l.price_per_credit, 0) / rows.length : 0;
 
@@ -83,8 +96,8 @@ export function MarketPanel() {
         {view === "sell" && producer && (
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="space-y-4">
-              <Field label="Credits to sell" hint={`You have ${fmt(profile.credits)} credits`} suffix="credits"><input className={INPUT + " num"} type="number" min={0} step="0.01" value={qty} onChange={(e) => setQty(e.target.value)} /></Field>
-              <Field label="Price per credit" hint="Between ₹0.01 and ₹1000" suffix="INR"><input className={INPUT + " num"} type="number" min={0} max={1000} step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} /></Field>
+              <Field label="Credits to sell" hint={profile.credits > 0 ? `You have ${fmt(profile.credits)} credits. You can sell up to that many.` : "You have no credits to sell yet"} suffix="credits"><input className={INPUT + " num"} type="text" inputMode="decimal" autoComplete="off" disabled={profile.credits <= 0} placeholder="0" value={qty} onChange={(e) => setQty(cleanAmount(e.target.value, Math.floor(profile.credits * 100) / 100))} /></Field>
+              <Field label="Price per credit" hint={`Between ${inr(PRICE_MIN).replace(".00", "")} and ${inr(PRICE_MAX).replace(".00", "")} per credit, like a normal electricity unit price`} suffix="INR"><input className={INPUT + " num"} type="text" inputMode="decimal" autoComplete="off" placeholder={`e.g. ${PRICE_MIN + 4}`} value={price} onChange={(e) => setPrice(cleanAmount(e.target.value, PRICE_MAX))} /></Field>
               <div className="flex items-center justify-between rounded-lg border border-emerald-200/80 bg-emerald-50/70 p-4">
                 <span className="text-sm font-semibold text-gray-600">You will receive</span><span className="num text-xl font-extrabold text-emerald-800">{inr(sellOk ? q * p : 0)}</span>
               </div>
