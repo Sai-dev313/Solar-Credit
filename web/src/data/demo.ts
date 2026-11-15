@@ -9,6 +9,8 @@ import migration from "./vendor/sql/20260101000000_init.sql?raw";
 // configures a Supabase-only publication that this in-browser Postgres does not have.)
 import removeCreditsOnLogDelete from "./vendor/sql/20260103000000_remove_credits_on_log_delete.sql?raw";
 import validateConsumerNumber from "./vendor/sql/20260104000000_validate_consumer_number.sql?raw";
+import ensureProfiles from "./vendor/sql/20260105000000_ensure_profiles.sql?raw";
+import listingPriceLimit from "./vendor/sql/20260106000000_listing_price_limit.sql?raw";
 // Plain JS module shared with the edge function
 import { processEvents, walletAddressFor } from "./vendor/chain-sync-process.js";
 import type { BillInput, DataApi, RpcResult, Role, Session } from "./types";
@@ -42,6 +44,8 @@ export function createDemoApi(): DataApi {
       await db.exec(migration);
       await db.exec(removeCreditsOnLogDelete);
       await db.exec(validateConsumerNumber);
+      await db.exec(ensureProfiles);
+      await db.exec(listingPriceLimit);
       await db.exec(`grant usage on schema public to anon, authenticated; grant all on all tables in schema public to service_role;`);
     }
     return db;
